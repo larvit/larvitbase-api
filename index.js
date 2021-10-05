@@ -210,6 +210,9 @@ function Api(options) {
 
 	// Output JSON to client
 	this.middleware.push((req, res, cb) => {
+		// Check if response has already been sent
+		if (res.headersSent) return cb();
+
 		let sendData = res.data;
 
 		res.setHeader('Content-Type', 'application/json; charset=UTF-8');
@@ -240,6 +243,9 @@ Api.prototype.start = function start(cb) {
 	this.base.start(cb);
 
 	this.base.on('error', (err, req, res) => {
+		// Error responses are often sent in controllers, check if response has already been sent
+		if (res.headersSent) return;
+
 		res.statusCode = 500;
 		res.end('"Internal server error: ' + err.message + '"');
 	});

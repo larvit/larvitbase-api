@@ -199,3 +199,67 @@ test('500 error when controller data is circular', function (t) {
 		t.end();
 	});
 });
+
+test('Response sent in the controller and error callback should work', function (t) {
+	const tasks = [];
+	const api = new Api({
+		routerOptions: {basePath: testEnvPath + '/2'}
+	});
+
+	// Start server
+	tasks.push(function (cb) {
+		api.start(cb);
+	});
+
+	// Try broken request
+	tasks.push(function (cb) {
+		request('http://localhost:' + api.base.httpServer.address().port + '/responseSentAndError', function (err, response, body) {
+			if (err) return cb(err);
+			t.equal(response.statusCode, 404);
+			t.equal(body, 'Not found!');
+			cb();
+		});
+	});
+
+	// Close server
+	tasks.push(function (cb) {
+		api.stop(cb);
+	});
+
+	async.series(tasks, function (err) {
+		if (err) throw err;
+		t.end();
+	});
+});
+
+test('Response sent in the controller should work', function (t) {
+	const tasks = [];
+	const api = new Api({
+		routerOptions: {basePath: testEnvPath + '/2'}
+	});
+
+	// Start server
+	tasks.push(function (cb) {
+		api.start(cb);
+	});
+
+	// Try broken request
+	tasks.push(function (cb) {
+		request('http://localhost:' + api.base.httpServer.address().port + '/responseSent', function (err, response, body) {
+			if (err) return cb(err);
+			t.equal(response.statusCode, 401);
+			t.equal(body, 'Unauthorized');
+			cb();
+		});
+	});
+
+	// Close server
+	tasks.push(function (cb) {
+		api.stop(cb);
+	});
+
+	async.series(tasks, function (err) {
+		if (err) throw err;
+		t.end();
+	});
+});
